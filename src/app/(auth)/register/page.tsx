@@ -1,72 +1,55 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icons } from "@/components/ui/icons";
-import { Separator } from "@/components/ui/separator";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
-import { toast } from 'sonner';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+export default function RegisterPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [registered, setRegistered] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const verification = searchParams.get('verification');
-  const message = searchParams.get('message');
-
-  useEffect(() => {
-    if (verification === 'pending') {
-      toast.info('Please verify your email before logging in');
-    } else if (verification === 'success') {
-      toast.success('Email verified successfully! You can now log in');
-    }
-  }, [verification]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
-    setError("");
 
     try {
-      const res = await signIn("credentials", { 
-        redirect: false, 
-        email, 
-        password,
-        callbackUrl: '/dashboard'
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
       });
 
-      if (!res?.ok) {
-        if (res?.error === 'Email not verified') {
-          toast.error('Please verify your email before logging in');
-          setError('Please verify your email before logging in');
-        } else if (res?.error === 'Please login using the method you used to create your account') {
-          setError('Please use Google login if you created your account with Google');
-        } else {
-          setError('Invalid email or password');
-        }
-        return;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed');
       }
 
-      // Login successful
-      toast.success('Login successful');
-      
-      // Use the callback URL from the response, fallback to dashboard
-      const callbackUrl = res?.url || '/dashboard';
-      router.push(callbackUrl);
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+      // Check if verification email was sent
+      if (data.message === 'Verification email sent') {
+        toast.success('Please check your email to verify your account');
+        router.push('/login?verification=pending');
+      } else {
+        // New registration successful
+        toast.success('Account created! Please check your email to verify your account');
+        router.push('/login?verification=pending');
+      }
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -80,19 +63,12 @@ export default function LoginPage() {
     >
       <Card className="w-full">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>
-            Choose your preferred sign in method
+            Choose your preferred sign up method
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {(registered || message) && (
-            <Alert className="mb-6 bg-green-50 text-green-700 border-green-200">
-              <AlertDescription>
-                {registered ? "Registration successful! Please login with your credentials." : message}
-              </AlertDescription>
-            </Alert>
-          )}
           {error && (
             <Alert className="mb-6 bg-red-50 text-red-700 border-red-200">
               <AlertDescription>{error}</AlertDescription>
@@ -111,6 +87,18 @@ export default function LoginPage() {
               </div>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -137,33 +125,27 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Sign in
-            </Button>
-          </form>
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading && (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Create account
+              </Button>
+            </form>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4 text-sm text-muted-foreground">
-          <div className="flex items-center justify-center space-x-1">
-            <span>Don't have an account?</span>
+        <CardFooter>
+          <div className="flex items-center justify-center w-full space-x-1 text-sm text-muted-foreground">
+            <span>Already have an account?</span>
             <Link 
-              href="/register" 
+              href="/login" 
               className="text-primary hover:text-primary/90 font-medium"
             >
-              Sign up
+              Sign in
             </Link>
           </div>
-          <Link 
-            href="/password-reset" 
-            className="text-primary hover:text-primary/90 font-medium text-center"
-          >
-            Forgot your password?
-          </Link>
         </CardFooter>
       </Card>
     </motion.div>
