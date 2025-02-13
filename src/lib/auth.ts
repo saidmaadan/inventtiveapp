@@ -71,22 +71,18 @@ export const authOptions: NextAuthConfig = {
             }
           });
 
-          if (!user) {
-            return null;
-          }
-
-          if (!user.password) {
-            throw new Error("Please login using the method you used to create your account");
+          if (!user || !user.password) {
+            throw new Error("Invalid email or password");
           }
 
           if (!user.emailVerified) {
-            throw new Error("Email not verified");
+            throw new Error("Please verify your email before logging in");
           }
 
           const isValid = await compare(credentials.password, user.password);
 
           if (!isValid) {
-            return null;
+            throw new Error("Invalid email or password");
           }
 
           return {

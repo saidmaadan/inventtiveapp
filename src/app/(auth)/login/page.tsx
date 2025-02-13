@@ -47,15 +47,10 @@ export default function LoginPage() {
         callbackUrl: '/dashboard'
       });
 
-      if (!res?.ok) {
-        if (res?.error === 'Email not verified') {
-          toast.error('Please verify your email before logging in');
-          setError('Please verify your email before logging in');
-        } else if (res?.error === 'Please login using the method you used to create your account') {
-          setError('Please use Google login if you created your account with Google');
-        } else {
-          setError('Invalid email or password');
-        }
+      if (!res?.ok || res?.error) {
+        const errorMessage = 'Invalid email or password';
+        toast.error(errorMessage);
+        setError(errorMessage);
         return;
       }
 

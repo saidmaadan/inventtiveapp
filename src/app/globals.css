@@ -73,3 +73,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.container-center {
+  @apply px-8 md:px-10 lg:px-14 mx-auto max-w-[1440px];
+}
+

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { SessionProvider } from "next-auth/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,18 +22,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
     <body className={inter.className}>
-    
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <main className="overflow-x-hidden">
-            {children}
-        </main>
-        <Toaster/>
+      <SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main className="overflow-x-hidden">
+              {children}
+          </main>
+          <Toaster/>
         </ThemeProvider>
+      </SessionProvider>
       
     </body>
   </html>

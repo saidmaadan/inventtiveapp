@@ -34,6 +34,7 @@ model User {
   analytics     Analytics[]
   payments      Payment[]
   blogs         Blog[]
+  newsletters   Newsletter[]
 
   @@map(name: "users")
 }
@@ -155,10 +156,29 @@ model Category {
 }
 
 model Newsletter {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-} 
+  id           String   @id @default(cuid())
+  subject      String
+  content      String   @db.Text
+  status       String   @default("DRAFT") // DRAFT, SCHEDULED, SENT
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  openRate     Float?
+  clickRate    Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  status       String   @default("ACTIVE") // ACTIVE, UNSUBSCRIBED
+  source       String   @default("WEBSITE") // WEBSITE, IMPORT, API
+  subscribedAt DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
 
