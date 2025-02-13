@@ -19,7 +19,7 @@ const footerLinks = {
     { href: "/features", label: "Features" },
     { href: "/pricing", label: "Pricing" },
     { href: "/blog", label: "Blog" },
-    { href: "/docs", label: "Documentation" },
+    { href: "/docs", label: "Documentations" },
   ],
   company: [
     { href: "/about", label: "About Us" },
