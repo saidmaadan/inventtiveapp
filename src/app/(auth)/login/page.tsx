@@ -75,7 +75,7 @@ export default function LoginPage() {
     >
       <Card className="w-full">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-bold">Sign in to your account</CardTitle>
           <CardDescription>
             Choose your preferred sign in method
           </CardDescription>
